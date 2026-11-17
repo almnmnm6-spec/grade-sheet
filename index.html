@@ -8,6 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="كشف الدرجات">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230F3D33'/%3E%3Cpath d='M32 10l6 16 16 6-16 6-6 16-6-16-16-6 16-6z' fill='%23D9A21B'/%3E%3C/svg%3E">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+<script src="firebase-config.js"></script>
 </head>
 <body>
 <title>كشف درجات الطلاب</title>
@@ -208,6 +209,38 @@ tfoot td.name{text-align:right;padding-inline-start:16px}
 .add form{display:grid;gap:8px;min-width:0}
 .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--muted)}
 .toast{position:fixed;bottom:calc(18px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:9px 18px;border-radius:99px;font-size:14px;font-weight:600;box-shadow:var(--shadow);z-index:20}
+/* ---------- sign-in gate (hosted copy) ---------- */
+body.locked > header, body.locked > main{display:none}
+.gate{position:fixed;inset:0;z-index:30;background:var(--band);display:grid;place-items:center;overflow:auto;
+  padding-block:max(24px,env(safe-area-inset-top,0px)) max(24px,env(safe-area-inset-bottom,0px));
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.gate::before{content:"";position:fixed;inset:0;opacity:.12;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'%3E%3Cg fill='none' stroke='%23F4F1E6' stroke-width='1.2'%3E%3Cpath d='M32 6l7.5 18.5L58 32l-18.5 7.5L32 58l-7.5-18.5L6 32l18.5-7.5z'/%3E%3Crect x='19' y='19' width='26' height='26' transform='rotate(45 32 32)'/%3E%3Ccircle cx='32' cy='32' r='5'/%3E%3C/g%3E%3C/svg%3E");background-size:64px 64px}
+.gate-card{position:relative;width:100%;max-width:400px;background:var(--paper);color:var(--ink);border-radius:18px;padding:26px 24px;box-shadow:0 24px 60px -20px rgba(0,0,0,.5);display:grid;gap:14px;border-top:5px solid var(--gold)}
+.gate-brand{display:flex;align-items:center;gap:12px}
+.gate-mark{width:44px;height:44px;border-radius:12px;background:var(--band);flex:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M32 12l5.5 14.5L52 32l-14.5 5.5L32 52l-5.5-14.5L12 32l14.5-5.5z' fill='%23D9A21B'/%3E%3C/svg%3E");background-size:cover}
+.gate-name{font-family:var(--f-display);font-size:24px;font-weight:700;line-height:1.2}
+.gate-card h2{font-family:var(--f-display);font-weight:500;font-size:21px;margin:0}
+.gate-card p{margin:0}
+.gate-card form{display:grid;gap:8px}
+.gate-card label{font-size:13px;font-weight:600;color:var(--muted);margin-top:4px}
+.gate-card input{width:100%;border:1px solid var(--line);background:var(--soft);border-radius:10px;padding:11px 12px;font-size:16px;text-align:left}
+.gate-card input:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px color-mix(in srgb,var(--gold) 25%,transparent)}
+.gate-go{width:100%;justify-content:center;padding:11px;font-size:16px;margin-top:8px}
+.gate-links{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.link{border:0;background:none;color:var(--c-h);cursor:pointer;padding:4px 0;font-size:14px;font-weight:600}
+.link:hover{text-decoration:underline}
+.gate-err{color:var(--bad);font-weight:600;font-size:14px}
+.gate-info{color:var(--ok);font-weight:600;font-size:14px}
+.gate-err:empty,.gate-info:empty{display:none}
+.gate button:disabled{opacity:.6;cursor:wait}
+.acct{max-width:100%;overflow:hidden}
+.acct #acctEmail{font-weight:500;opacity:.85;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:190px}
+.acct-out{font-weight:700}
+.acct.warn{background:var(--bad);border-color:var(--bad);color:#fff}
+.migrate{padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;border-color:var(--gold);background:var(--gold-soft)}
+
 /* ---------- home-screen guide ---------- */
 .install{padding:18px;display:grid;gap:14px}
 .install h2{font-family:var(--f-display);font-weight:500;font-size:19px;margin:0}
@@ -303,6 +336,7 @@ tfoot td.name{text-align:right;padding-inline-start:16px}
         <button class="btn btn-ghost-light" id="toggleSettings" type="button" aria-expanded="false">⚙ إعدادات الكشف</button>
         <button class="btn btn-gold" id="exportBtn" type="button" hidden>⬇ تصدير Excel (CSV)</button>
         <button class="btn btn-ghost-light" id="backupBtn" type="button" hidden>💾 نسخة احتياطية</button>
+        <button class="btn btn-ghost-light acct" id="acctBtn" type="button" hidden title="تسجيل الخروج"><span id="acctEmail" dir="ltr"></span><span class="acct-out" id="acctLabel">خروج</span></button>
         <label class="btn btn-ghost-light" id="restoreLbl" hidden>↺ استعادة<input type="file" id="restoreFile" accept=".json,application/json" hidden></label>
       </div>
     </div>
@@ -318,6 +352,10 @@ tfoot td.name{text-align:right;padding-inline-start:16px}
 
 <main class="wrap">
   <div class="status"><span class="dot" id="dot"></span><span id="statusText">جارٍ تحميل الكشف…</span></div>
+  <div class="migrate panel" id="migrateBox" hidden>
+    <span id="migrateText"></span>
+    <div class="row"><button class="btn btn-ink" id="migrateYes" type="button">نقل إلى حسابي</button><button class="btn btn-ghost" id="migrateNo" type="button">لا</button></div>
+  </div>
 
   <section class="panel install" id="install" hidden>
     <div class="install-head">
@@ -449,6 +487,40 @@ tfoot td.name{text-align:right;padding-inline-start:16px}
   </section>
 </main>
 <div class="toast" id="toast" hidden></div>
+
+<div class="gate" id="authGate" hidden role="dialog" aria-modal="true" aria-labelledby="authTitle">
+  <div class="gate-card">
+    <div class="gate-brand">
+      <span class="gate-mark" aria-hidden="true"></span>
+      <div><div class="eyebrow">سجل متابعة التحصيل الدراسي</div><div class="gate-name">كشف الدرجات</div></div>
+    </div>
+    <div id="authLoading" class="hint">جارٍ التحقق من الدخول…</div>
+    <form id="authForm" hidden novalidate>
+      <h2 id="authTitle">تسجيل الدخول</h2>
+      <p class="hint">الكشف محمي. لا يرى الدرجات إلا صاحب الحساب.</p>
+      <label for="authEmail">البريد الإلكتروني</label>
+      <input id="authEmail" type="email" autocomplete="email" inputmode="email" dir="ltr" required>
+      <label for="authPass">كلمة المرور</label>
+      <input id="authPass" type="password" autocomplete="current-password" dir="ltr" required minlength="8">
+      <div id="authPass2Row" hidden><label for="authPass2">تأكيد كلمة المرور</label><input id="authPass2" type="password" autocomplete="new-password" dir="ltr"></div>
+      <button class="btn btn-gold gate-go" id="authSubmit" type="submit">دخول</button>
+      <div class="gate-links"><button type="button" class="link" id="authSwitch">أول مرة؟ أنشئ حسابًا</button><button type="button" class="link" id="forgotBtn">نسيت كلمة المرور؟</button></div>
+    </form>
+    <div id="authVerify" hidden>
+      <h2>فعّل بريدك</h2>
+      <p>أرسلنا رابط تفعيل إلى <b id="verifyEmail" dir="ltr"></b>. افتح الرسالة واضغط الرابط، ثم ارجع هنا. تفقّد البريد غير المرغوب إذا لم تجدها.</p>
+      <button class="btn btn-gold gate-go" id="verifiedBtn" type="button">تم التفعيل</button>
+      <div class="gate-links"><button type="button" class="link" id="resendBtn">إعادة إرسال الرسالة</button><button type="button" class="link" data-signout>استخدام بريد آخر</button></div>
+    </div>
+    <div id="authDenied" hidden>
+      <h2>غير مصرّح</h2>
+      <p>البريد <b id="deniedEmail" dir="ltr"></b> لا يملك صلاحية فتح هذا الكشف.</p>
+      <button class="btn btn-ghost gate-go" type="button" data-signout>تسجيل الخروج</button>
+    </div>
+    <p class="gate-err" id="authErr" role="alert"></p>
+    <p class="gate-info" id="authInfo" role="status"></p>
+  </div>
+</div>
 
 <script>
 (() => {
@@ -848,8 +920,10 @@ tfoot td.name{text-align:right;padding-inline-start:16px}
     try{
       const d=JSON.parse(await f.text());
       if(!d || d.app!=="gradebook" || !Array.isArray(d.students)) throw 0;
+      const list=d.students.filter(s=>s&&s.id).map(s=>({id:String(s.id),name:String(s.name||""),order:+s.order||0,grades:s.grades||{}}));
+      if(cloud && mode==="live"){ writeAll(d.config||{}, list); toast("يُرفع الكشف إلى حسابك: "+ar(list.length)+" طالب"); return; }
       config={...DEFAULT_CONFIG,...d.config,max:{...DEFAULT_CONFIG.max,...((d.config||{}).max||{})}};
-      students=d.students.filter(s=>s&&s.id).map(s=>({id:String(s.id),name:String(s.name||""),order:+s.order||0,grades:s.grades||{}}));
+      students=list;
       saveLocal(); render(); toast("استُعيد الكشف: "+ar(students.length)+" طالب");
     }catch(_){ toast("الملف غير صالح — اختر ملف النسخة الاحتياطية للكشف"); }
   });
@@ -866,24 +940,142 @@ tfoot td.name{text-align:right;padding-inline-start:16px}
 
   function goLocal(){ if(mode==="live") return; mode="local"; loadLocal(); render(); }
 
+  // ---------- cloud mode (hosted copy): Firebase email sign-in + Firestore under users/<uid>/ ----------
+  let cloud = null;            // {auth, fs, user, unsub}
+  const FBV = "10.12.2";
+  const loadScript = src => new Promise((ok,bad)=>{ const s=document.createElement("script"); s.src=src; s.onload=ok; s.onerror=()=>bad(new Error("load "+src)); document.head.appendChild(s); });
+  function fsStore(fs, uid){
+    const base = "users/"+uid+"/";
+    const wrap = ref => ({ id:ref.id, path:ref.path, set:d=>ref.set(d), update:d=>ref.set(d,{merge:true}), delete:()=>ref.delete(), onSnapshot:(n,e)=>ref.onSnapshot({includeMetadataChanges:true},n,e) });
+    return {
+      doc: p => wrap(fs.doc(base+p)),
+      collection: p => { const c=fs.collection(base+p); return { doc: id => wrap(id ? c.doc(id) : c.doc()), onSnapshot:(n,e)=>c.onSnapshot({includeMetadataChanges:true},n,e) }; }
+    };
+  }
+  // subscribe the page to a store (Claude db or Firestore adapter); returns an unsubscribe
+  function attachStore(store, onDenied){
+    db = store; let gotC=false, gotS=false, first=true;
+    const fallback = setTimeout(()=>{ if(mode==="loading") toast("الاتصال بطيء — تُعرض البيانات عند وصولها"); },10000);
+    const ready=()=>{ if(gotC&&gotS&&mode!=="live"){ clearTimeout(fallback); mode="live"; } render(); };
+    const u1 = db.doc("config/main").onSnapshot(snap=>{
+      if(snap.exists){ const c=snap.data(); config={...DEFAULT_CONFIG,...c,max:{...DEFAULT_CONFIG.max,...(c.max||{})}}; }
+      if(!snap.metadata.fromCache) gotC=true; ready();
+    },e=>{ if(e && /permission/.test(e.code||"") && onDenied) return onDenied(); gotC=true; ready(); });
+    const u2 = db.collection("students").onSnapshot(snap=>{
+      students = snap.docs.map(x=>{ const v=x.data(); return {id:x.id,name:v.name||"",order:v.order||0,grades:structuredClone(v.grades||{})}; });
+      if(!snap.metadata.fromCache){ gotS=true; if(first){ first=false; offerMigration(); } }
+      ready();
+    },e=>{ clearTimeout(fallback); if(e && /permission/.test(e.code||"") && onDenied) return onDenied();
+      if(!cloud){ if(mode!=="live"){ mode="local"; loadLocal(); } render(); toast("تعذّر الاتصال بقاعدة البيانات — تعمل الآن محليًا"); }
+      else toast("تعذّر الاتصال بالسحابة — تحقق من الإنترنت ثم أعد تحميل الصفحة"); });
+    return ()=>{ clearTimeout(fallback); u1(); u2(); };
+  }
+  // after the first cloud load: if the account is empty but this browser has its own grades, offer to move them up
+  function offerMigration(){
+    if(!cloud || students.length) return;
+    let local=null; try{ local=JSON.parse(localStorage.getItem(LS)||"null"); }catch(_){}
+    const real = local && Array.isArray(local.students) ? local.students.filter(s=>s && s.id && !/^ex/.test(s.id)) : [];
+    $("#migrateBox").hidden = !real.length;
+    if(real.length) $("#migrateText").textContent = "يوجد في هذا المتصفح "+ar(real.length)+" طالب محفوظون قبل تسجيل الدخول. انقلهم إلى حسابك؟";
+  }
+  async function writeAll(cfg, list){
+    config={...DEFAULT_CONFIG,...cfg,max:{...DEFAULT_CONFIG.max,...((cfg||{}).max||{})}};
+    saveConfig();
+    list.forEach(s=>{ const doc={name:String(s.name||""),order:+s.order||0,grades:s.grades||{}}; enqueue("students/"+s.id,()=>db.doc("students/"+s.id).set(doc)); });
+  }
+
+  const authMsg = (code) => ({
+    "auth/invalid-credential":"البريد أو كلمة المرور غير صحيحة.","auth/wrong-password":"البريد أو كلمة المرور غير صحيحة.",
+    "auth/user-not-found":"لا يوجد حساب بهذا البريد. اختر «إنشاء حساب».","auth/invalid-login-credentials":"البريد أو كلمة المرور غير صحيحة.",
+    "auth/email-already-in-use":"هذا البريد مسجّل مسبقًا. اختر «تسجيل الدخول».","auth/weak-password":"كلمة المرور قصيرة — استخدم ٨ أحرف أو أكثر.",
+    "auth/invalid-email":"اكتب بريدًا إلكترونيًا صحيحًا.","auth/missing-password":"اكتب كلمة المرور.",
+    "auth/too-many-requests":"محاولات كثيرة. انتظر قليلًا ثم حاول مجددًا.","auth/network-request-failed":"لا يوجد اتصال بالإنترنت.",
+    "auth/operation-not-allowed":"تسجيل الدخول بالبريد غير مفعّل في إعدادات Firebase.","auth/unauthorized-domain":"هذا الموقع غير مضاف في «Authorized domains» في Firebase."
+  })[code] || "حدث خطأ غير متوقع ("+(code||"؟")+").";
+  let authMode = "login";
+  function showAuth(state, extra){
+    const box=$("#authGate"); box.hidden=false; document.body.classList.add("locked");
+    ["authForm","authVerify","authDenied","authLoading"].forEach(id=>$("#"+id).hidden=true);
+    $("#authErr").textContent=""; $("#authInfo").textContent="";
+    if(state==="loading") $("#authLoading").hidden=false;
+    if(state==="login"){ $("#authForm").hidden=false; setAuthMode(authMode); }
+    if(state==="verify"){ $("#authVerify").hidden=false; $("#verifyEmail").textContent=extra||""; }
+    if(state==="denied"){ $("#authDenied").hidden=false; $("#deniedEmail").textContent=extra||""; }
+  }
+  function hideAuth(){ $("#authGate").hidden=true; document.body.classList.remove("locked"); }
+  function setAuthMode(m){
+    authMode=m; const up=m==="signup";
+    $("#authTitle").textContent = up ? "إنشاء حساب" : "تسجيل الدخول";
+    $("#authSubmit").textContent = up ? "إنشاء الحساب" : "دخول";
+    $("#authSwitch").textContent = up ? "لديك حساب؟ سجّل الدخول" : "أول مرة؟ أنشئ حسابًا";
+    $("#authPass").autocomplete = up ? "new-password" : "current-password";
+    $("#authPass2Row").hidden = !up; $("#forgotBtn").hidden = up;
+  }
+  function busy(on){ document.querySelectorAll("#authGate button").forEach(b=>b.disabled=on); }
+
+  async function startCloud(cfg){
+    showAuth("loading");
+    try{
+      await loadScript(`https://www.gstatic.com/firebasejs/${FBV}/firebase-app-compat.js`);
+      await Promise.all([loadScript(`https://www.gstatic.com/firebasejs/${FBV}/firebase-auth-compat.js`), loadScript(`https://www.gstatic.com/firebasejs/${FBV}/firebase-firestore-compat.js`)]);
+      firebase.initializeApp(cfg);
+    }catch(e){ $("#authLoading").textContent="تعذّر تحميل خدمة الدخول. تحقق من الإنترنت ثم أعد تحميل الصفحة."; return; }
+    const auth=firebase.auth(), fs=firebase.firestore();
+    auth.languageCode="ar";
+    cloud={auth,fs,user:null,unsub:null};
+    const detach=()=>{ if(cloud.unsub){ cloud.unsub(); cloud.unsub=null; } db=null; mode="loading"; students=[]; config=structuredClone(DEFAULT_CONFIG); $("#acctBtn").hidden=true; render(); };
+    auth.onAuthStateChanged(user=>{
+      cloud.user=user; detach();
+      if(!user){ showAuth("login"); return; }
+      if(!user.emailVerified){ showAuth("verify", user.email); return; }
+      hideAuth();
+      $("#acctBtn").hidden=false; $("#acctEmail").textContent=user.email;
+      cloud.unsub = attachStore(fsStore(fs,user.uid), ()=>{ detach(); showAuth("denied", user.email); });
+    });
+
+    $("#authSwitch").onclick=()=>{ setAuthMode(authMode==="login"?"signup":"login"); $("#authErr").textContent=""; };
+    $("#authForm").onsubmit=async e=>{
+      e.preventDefault(); const email=$("#authEmail").value.trim(), pass=$("#authPass").value;
+      $("#authErr").textContent=""; busy(true);
+      try{
+        if(authMode==="signup"){
+          if(pass!==$("#authPass2").value){ $("#authErr").textContent="كلمتا المرور غير متطابقتين."; return; }
+          const cred=await auth.createUserWithEmailAndPassword(email,pass);
+          await cred.user.sendEmailVerification();
+        } else await auth.signInWithEmailAndPassword(email,pass);
+        $("#authPass").value=""; $("#authPass2").value="";
+      }catch(err){ $("#authErr").textContent=authMsg(err.code); }
+      finally{ busy(false); }
+    };
+    $("#forgotBtn").onclick=async()=>{
+      const email=$("#authEmail").value.trim(); if(!email){ $("#authErr").textContent="اكتب بريدك أولًا ثم اضغط «نسيت كلمة المرور»."; $("#authEmail").focus(); return; }
+      busy(true); try{ await auth.sendPasswordResetEmail(email); $("#authInfo").textContent="إذا كان البريد مسجّلًا ستصلك رسالة لتعيين كلمة مرور جديدة. تفقّد البريد غير المرغوب أيضًا."; }
+      catch(err){ $("#authErr").textContent=authMsg(err.code); } finally{ busy(false); }
+    };
+    $("#verifiedBtn").onclick=async()=>{ busy(true); try{ await auth.currentUser.reload(); if(auth.currentUser.emailVerified){ await auth.currentUser.getIdToken(true); location.reload(); } else $("#authErr").textContent="لم يُفعَّل البريد بعد. افتح الرابط في الرسالة ثم حاول مجددًا."; }catch(err){ $("#authErr").textContent=authMsg(err.code); } finally{ busy(false); } };
+    $("#resendBtn").onclick=async()=>{ busy(true); try{ await auth.currentUser.sendEmailVerification(); $("#authInfo").textContent="أُرسلت رسالة التفعيل مرة أخرى."; }catch(err){ $("#authErr").textContent=authMsg(err.code); } finally{ busy(false); } };
+    document.querySelectorAll("[data-signout]").forEach(b=>b.onclick=()=>auth.signOut());
+    $("#acctBtn").onclick=()=>{ if(confirmOut){ auth.signOut(); confirmOut=false; } else { confirmOut=true; $("#acctBtn").classList.add("warn"); $("#acctLabel").textContent="اضغط مرة أخرى للخروج"; setTimeout(()=>{ confirmOut=false; $("#acctBtn").classList.remove("warn"); $("#acctLabel").textContent="خروج"; },3500); } };
+    $("#migrateYes").onclick=()=>{ let local=null; try{ local=JSON.parse(localStorage.getItem(LS)||"null"); }catch(_){}
+      if(!local){ $("#migrateBox").hidden=true; return; }
+      writeAll(local.config||{}, (local.students||[]).filter(s=>s&&s.id&&!/^ex/.test(s.id))); $("#migrateBox").hidden=true; toast("نُقلت البيانات إلى حسابك"); };
+    $("#migrateNo").onclick=()=>{ $("#migrateBox").hidden=true; };
+  }
+  let confirmOut=false;
+
   (async()=>{
-    if(!window.claude || !window.claude.use){ goLocal(); return; }
+    if(standalone){
+      const fb = window.GRADEBOOK_FIREBASE;
+      if(fb && fb.apiKey && location.protocol.startsWith("http")) startCloud(fb); else goLocal();
+      return;
+    }
     claude.use("downloads").then(d=>{ downloads=d; $("#exportBtn").hidden=!d; }).catch(()=>{});
     const fallback = setTimeout(()=>{ if(mode==="loading") goLocal(); },10000);
     let d=null; try{ d = await claude.use("db"); }catch(e){}
     if(!d){ clearTimeout(fallback); goLocal(); return; }
-    db=d;
+    clearTimeout(fallback);
     try{ const u=await claude.use("user"); if(u){ const c=await u.can("data.write"); if(c===false) canWrite=false; } }catch(e){}
-    let gotC=false, gotS=false;
-    const ready=()=>{ if(gotC&&gotS&&mode!=="live"){ clearTimeout(fallback); mode="live"; } render(); };
-    db.doc("config/main").onSnapshot(snap=>{
-      if(snap.exists){ const c=snap.data(); config={...DEFAULT_CONFIG,...c,max:{...DEFAULT_CONFIG.max,...(c.max||{})}}; }
-      if(!snap.metadata.fromCache) gotC=true; ready();
-    },()=>{ gotC=true; ready(); });
-    db.collection("students").onSnapshot(snap=>{
-      students = snap.docs.map(x=>{ const v=x.data(); return {id:x.id,name:v.name||"",order:v.order||0,grades:structuredClone(v.grades||{})}; });
-      if(!snap.metadata.fromCache) gotS=true; ready();
-    },e=>{ clearTimeout(fallback); if(mode!=="live"){ mode="local"; loadLocal(); } render(); toast("تعذّر الاتصال بقاعدة البيانات — تعمل الآن محليًا"); });
+    attachStore(d);
   })();
 })();
 </script>
