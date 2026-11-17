@@ -9,7 +9,8 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230F3D33'/%3E%3Cpath d='M32 10l6 16 16 6-16 6-6 16-6-16-16-6 16-6z' fill='%23D9A21B'/%3E%3C/svg%3E">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
 </head>
-<body><title>كشف درجات الطلاب</title>
+<body>
+<title>كشف درجات الطلاب</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -375,7 +376,7 @@ tfoot td.name{text-align:right;padding-inline-start:16px}
         <label class="max-card" style="background:var(--c-h-bg)"><span class="k-h">الواجبات</span><input id="max-h" type="number" min="1" max="100" data-mk="h"></label>
         <label class="max-card" style="background:var(--c-w-bg)"><span class="k-w">أوراق العمل</span><input id="max-w" type="number" min="1" max="100" data-mk="w"></label>
         <label class="max-card" id="maxUCard" style="background:var(--c-u-bg)"><span class="k-u">اختبار كل وحدة</span><input id="max-u" type="number" min="1" max="100" data-mk="u"></label>
-        <label class="max-card" style="background:var(--c-e-bg)"><span class="k-e">الاختبار الفتري</span><input id="max-e" type="number" min="1" max="100" data-mk="e"></label>
+        <label class="max-card" style="background:var(--c-e-bg)"><span class="k-e">اختبار الفصل</span><input id="max-e" type="number" min="1" max="100" data-mk="e"></label>
       </div>
     </div>
     <div class="hint" id="maxSum"></div>
@@ -389,7 +390,7 @@ tfoot td.name{text-align:right;padding-inline-start:16px}
       <label>الدرجة العظمى<input id="colMax" type="number" min="0.25" max="100" step="0.25" value="10"></label>
       <label>مكانها بعد<select id="colAfter">
         <option value="p">المشاركة</option><option value="h">الواجبات</option>
-        <option value="w" selected>أوراق العمل</option><option value="e">الاختبار الفتري</option>
+        <option value="w" selected>أوراق العمل</option><option value="e">اختبار الفصل</option>
       </select></label>
       <button class="btn btn-ink" type="submit" style="align-self:end">+ إضافة الخانة</button>
     </form>
@@ -451,8 +452,8 @@ tfoot td.name{text-align:right;padding-inline-start:16px}
 
 <script>
 (() => {
-  const BASE_LABELS = {p:"المشاركة",h:"الواجبات",w:"أوراق العمل",e:"الاختبار الفتري"};
-  const BASE_SHORT = {p:"مشاركة",h:"واجبات",w:"أوراق عمل",e:"اختبار فتري"};
+  const BASE_LABELS = {p:"المشاركة",h:"الواجبات",w:"أوراق العمل",e:"اختبار الفصل"};
+  const BASE_SHORT = {p:"مشاركة",h:"واجبات",w:"أوراق عمل",e:"اختبار الفصل"};
   const DEFAULT_TERMS = ["الفصل الأول","الفصل الثاني","الفصل الثالث"];
   const termName = i => ((config.termNames||[])[i] || "").trim() || DEFAULT_TERMS[i];
   const BAND_CLS = ["a","b","c","d","f"];
@@ -460,12 +461,12 @@ tfoot td.name{text-align:right;padding-inline-start:16px}
   const bands = () => DEFAULT_BANDS.map((d,i)=>{ const b=(config.bands||[])[i]||{}; return {label:(b.label||"").trim()||d.label, min:i===4?0:(Number.isFinite(+b.min)&&b.min!==""&&b.min!=null?+b.min:d.min)}; });
   const passMin = () => bands()[3].min;
   const ORD = ["الأولى","الثانية","الثالثة","الرابعة","الخامسة","السادسة","السابعة","الثامنة"];
-  const DEFAULT_CONFIG = {school:"",subject:"",className:"",teacher:"",year:"",termCount:2,periodCount:2,unitCount:0,max:{p:10,h:10,w:10,u:5,e:10}};
+  const DEFAULT_CONFIG = {school:"",subject:"",className:"",teacher:"",year:"",termCount:2,periodCount:2,unitCount:0,extra:[{id:"x2",after:"e",name:"اختبار فتري"}],max:{p:10,h:10,w:10,u:5,e:10,x2:20}};
   // columns: participation, homework, worksheets, unit tests u1..uN, end-of-term exam
   // extra columns: config.extra = [{id:"x…", after:"p|h|w|e", name}], max kept in config.max[id]
   const extras = () => (config.extra||[]).filter(x=>x && x.id);
   const extraOf = k => extras().find(x=>x.id===k) || {};
-  const AFTER_NAMES = {p:"المشاركة",h:"الواجبات",w:"أوراق العمل",e:"الاختبار الفتري"};
+  const AFTER_NAMES = {p:"المشاركة",h:"الواجبات",w:"أوراق العمل",e:"اختبار الفصل"};
   const keys = () => {
     const units = Array.from({length:config.unitCount||0},(_,i)=>"u"+(i+1));
     const after = a => extras().filter(x=>x.after===a).map(x=>x.id);
