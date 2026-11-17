@@ -1,0 +1,891 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0F3D33">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="كشف الدرجات">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230F3D33'/%3E%3Cpath d='M32 10l6 16 16 6-16 6-6 16-6-16-16-6 16-6z' fill='%23D9A21B'/%3E%3C/svg%3E">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui,sans-serif}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body><title>كشف درجات الطلاب</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Reem+Kufi:wght@500;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: a deep-green "school ledger" band with a geometric star pattern, then a working sheet on paper; one table per term + a yearly summary. */
+:root{
+  --bg:#EEF2EF; --paper:#FFFFFF; --ink:#14251F; --muted:#5D6F68; --line:#D9E2DD; --soft:#F5F8F6;
+  --band:#0F3D33; --band-2:#165244; --band-ink:#F4F1E6; --gold:#D9A21B; --gold-soft:#FBF1D4;
+  --c-p:#0F8A72; --c-h:#2F6FD1; --c-w:#C27C0E; --c-e:#C2405B;
+  --c-p-bg:#E3F4EF; --c-h-bg:#E5EEFB; --c-w-bg:#FBF0DE; --c-e-bg:#FBE6EA;
+  --c-u:#7A4EC2; --c-u-bg:#EEE7FA;
+  --ok:#14855F; --warn:#B7791F; --bad:#C2304B;
+  --focus:#D9A21B;
+  --f-display:"Reem Kufi","IBM Plex Sans Arabic",Tahoma,sans-serif;
+  --f-body:"IBM Plex Sans Arabic",Tahoma,"Segoe UI",sans-serif;
+  --shadow:0 1px 2px rgba(15,61,51,.06),0 8px 24px -12px rgba(15,61,51,.18);
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0C1513; --paper:#13201C; --ink:#E8EFEB; --muted:#93A69E; --line:#24352F; --soft:#182823;
+  --band:#0A2A23; --band-2:#103A30; --band-ink:#F4F1E6; --gold:#E8B53A; --gold-soft:#3A3014;
+  --c-p:#3CC4A6; --c-h:#77A6F2; --c-w:#E9A94A; --c-e:#EE7D93;
+  --c-p-bg:#12332B; --c-h-bg:#172840; --c-w-bg:#36290F; --c-e-bg:#3A1A22;
+  --c-u:#B394EE; --c-u-bg:#2A1F40;
+  --ok:#43C893; --warn:#E3AE4F; --bad:#F07A90; --focus:#E8B53A;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px -12px rgba(0,0,0,.6);
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0C1513; --paper:#13201C; --ink:#E8EFEB; --muted:#93A69E; --line:#24352F; --soft:#182823;
+  --band:#0A2A23; --band-2:#103A30; --band-ink:#F4F1E6; --gold:#E8B53A; --gold-soft:#3A3014;
+  --c-p:#3CC4A6; --c-h:#77A6F2; --c-w:#E9A94A; --c-e:#EE7D93;
+  --c-p-bg:#12332B; --c-h-bg:#172840; --c-w-bg:#36290F; --c-e-bg:#3A1A22;
+  --c-u:#B394EE; --c-u-bg:#2A1F40;
+  --ok:#43C893; --warn:#E3AE4F; --bad:#F07A90; --focus:#E8B53A;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 8px 24px -12px rgba(0,0,0,.6);
+  color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.6;direction:rtl}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+
+/* ---------- band ---------- */
+.band{background:var(--band);color:var(--band-ink);position:relative;overflow:hidden}
+.band::before{content:"";position:absolute;inset:0;opacity:.13;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'%3E%3Cg fill='none' stroke='%23F4F1E6' stroke-width='1.2'%3E%3Cpath d='M32 6l7.5 18.5L58 32l-18.5 7.5L32 58l-7.5-18.5L6 32l18.5-7.5z'/%3E%3Crect x='19' y='19' width='26' height='26' transform='rotate(45 32 32)'/%3E%3Ccircle cx='32' cy='32' r='5'/%3E%3C/g%3E%3C/svg%3E");
+  background-size:64px 64px}
+.band::after{content:"";position:absolute;inset:auto 0 0 0;height:5px;background:linear-gradient(90deg,var(--c-p),var(--c-h),var(--c-w),var(--c-u),var(--c-e))}
+.band .wrap{position:relative;padding-block:28px 34px;display:grid;gap:18px}
+.band-top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px}
+.eyebrow{font-size:12.5px;letter-spacing:.04em;color:var(--gold);font-weight:600}
+h1{font-family:var(--f-display);font-weight:700;font-size:clamp(28px,5vw,44px);line-height:1.15;margin:4px 0 0;text-wrap:balance}
+.band-actions{display:flex;gap:8px;flex-wrap:wrap}
+.btn{border:1px solid transparent;border-radius:10px;padding:8px 14px;cursor:pointer;font-weight:600;font-size:14px;display:inline-flex;align-items:center;gap:6px;transition:transform .12s,background .15s}
+.btn:active{transform:translateY(1px)}
+.btn-gold{background:var(--gold);color:#1E1606}
+.btn-ghost-light{background:rgba(244,241,230,.08);border-color:rgba(244,241,230,.28);color:var(--band-ink)}
+.btn-ghost-light:hover{background:rgba(244,241,230,.16)}
+.btn-ghost{background:transparent;border-color:var(--line);color:var(--ink)}
+.btn-ghost:hover{background:var(--soft)}
+.btn-ink{background:var(--band);color:var(--band-ink)}
+.btn-danger{background:var(--bad);color:#fff}
+
+.meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}
+.meta label{display:grid;gap:2px;font-size:12px;color:rgba(244,241,230,.7)}
+.meta input{background:rgba(244,241,230,.07);border:1px solid rgba(244,241,230,.18);border-radius:9px;padding:7px 10px;color:var(--band-ink);font-size:14.5px;font-weight:500;min-width:0}
+.meta input:hover{border-color:rgba(244,241,230,.4)}
+.meta input:focus{background:rgba(244,241,230,.14);outline:none;border-color:var(--gold)}
+.meta input::placeholder{color:rgba(244,241,230,.4)}
+
+/* ---------- status + settings ---------- */
+main.wrap{padding-block:22px 48px;display:grid;grid-template-columns:minmax(0,1fr);gap:18px}
+.band .wrap{grid-template-columns:minmax(0,1fr)}
+.status{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--muted);flex:none}
+.dot.live{background:var(--ok);box-shadow:0 0 0 3px color-mix(in srgb,var(--ok) 25%,transparent)}
+.dot.local{background:var(--warn)}
+.dot.saving{background:var(--gold);animation:pulse 1s infinite}
+@keyframes pulse{50%{opacity:.35}}
+@media (prefers-reduced-motion:reduce){.dot.saving{animation:none}.btn{transition:none}}
+
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow)}
+.settings{padding:18px;display:grid;gap:16px}
+.settings h2,.add h2{font-family:var(--f-display);font-weight:500;font-size:19px;margin:0}
+.max-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.max-card{border-radius:12px;padding:10px 12px;display:grid;gap:4px;border:1px solid var(--line)}
+.max-card span{font-size:13px;font-weight:600}
+.max-card input{width:100%;border:1px solid var(--line);background:var(--paper);border-radius:8px;padding:6px 8px;font-variant-numeric:tabular-nums;font-size:16px;font-weight:600}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{border:0;background:transparent;padding:6px 14px;cursor:pointer;font-weight:600;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--band);color:var(--band-ink)}
+.hint{font-size:12.5px;color:var(--muted)}
+
+/* ---------- stats ---------- */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.stat{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:12px 14px;display:grid;gap:2px}
+.stat b{font-family:var(--f-display);font-size:26px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.2}
+.stat span{font-size:12.5px;color:var(--muted)}
+.stat small{font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dist{display:flex;height:8px;border-radius:99px;overflow:hidden;background:var(--soft);margin-top:6px}
+.dist i{display:block;height:100%}
+
+/* ---------- tabs ---------- */
+.tabs{display:flex;gap:6px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:0}
+.tab{border:0;background:transparent;padding:10px 16px;cursor:pointer;font-weight:600;color:var(--muted);border-bottom:3px solid transparent;margin-bottom:-1px;font-size:15px}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--gold)}
+.tab:hover{color:var(--ink)}
+.tab.sum{margin-inline-start:auto}
+
+.subtabs{display:flex;gap:6px;flex-wrap:wrap;align-items:center;padding:10px 16px;background:var(--soft);border-bottom:1px solid var(--line)}
+.sub-of{font-size:12.5px;color:var(--muted);font-weight:600;margin-inline-end:4px}
+.sub-of::after{content:" ‹"}
+.subtab{border:1px solid var(--line);background:var(--paper);border-radius:99px;padding:5px 16px;cursor:pointer;font-weight:600;font-size:14px;color:var(--muted)}
+.subtab:hover{color:var(--ink);border-color:var(--muted)}
+.subtab[aria-pressed="true"]{background:var(--band);border-color:var(--band);color:var(--band-ink)}
+.subtab.s{margin-inline-start:auto;border-style:dashed}
+.subtab.s[aria-pressed="true"]{border-style:solid;background:var(--gold);border-color:var(--gold);color:#1E1606}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--line)}
+.search{flex:1 1 220px;max-width:340px;border:1px solid var(--line);background:var(--soft);border-radius:10px;padding:8px 12px;min-width:0}
+select{border:1px solid var(--line);background:var(--paper);border-radius:10px;padding:8px 10px}
+
+/* ---------- table ---------- */
+.table-scroll{overflow-x:auto}
+table{width:100%;border-collapse:separate;border-spacing:0;font-variant-numeric:tabular-nums;min-width:760px}
+thead th{position:sticky;top:0;background:var(--paper);font-size:13px;font-weight:600;color:var(--muted);text-align:center;padding:10px 6px;border-bottom:1px solid var(--line);white-space:nowrap}
+thead th.name{text-align:right;padding-inline-start:16px}
+th .cat{display:inline-flex;flex-direction:column;align-items:center;gap:2px;line-height:1.3}
+th .cat em{font-style:normal;font-size:11px;padding:1px 8px;border-radius:99px;font-weight:600}
+.k-p em{background:var(--c-p-bg);color:var(--c-p)} .k-h em{background:var(--c-h-bg);color:var(--c-h)}
+.k-w em{background:var(--c-w-bg);color:var(--c-w)} .k-e em{background:var(--c-e-bg);color:var(--c-e)}
+.k-u em{background:var(--c-u-bg);color:var(--c-u)}
+.k-p{color:var(--c-p)} .k-h{color:var(--c-h)} .k-w{color:var(--c-w)} .k-e{color:var(--c-e)} .k-u{color:var(--c-u)}
+.g.c-u{border-bottom:3px solid var(--c-u)}
+.h-name{width:96px;text-align:center;border:1px dashed transparent;background:transparent;border-radius:7px;padding:2px 4px;font-weight:700;font-size:13px;color:inherit}
+.h-max{width:38px;text-align:center;border:1px dashed transparent;background:transparent;border-radius:6px;padding:0 2px;font:inherit;font-weight:700;color:inherit;-moz-appearance:textfield}
+.h-max::-webkit-outer-spin-button,.h-max::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.h-name:hover,.h-max:hover{border-color:currentColor}
+.h-name:focus,.h-max:focus{outline:none;border-style:solid;border-color:var(--focus);background:var(--paper)}
+.h-name:disabled,.h-max:disabled{border-color:transparent}
+.edit-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+.edit-grid label{display:grid;gap:3px;font-size:12.5px;color:var(--muted)}
+.edit-grid input{border:1px solid var(--line);background:var(--soft);border-radius:8px;padding:6px 10px;min-width:0;font-weight:600}
+.band-row{display:grid;grid-template-columns:auto 1fr 84px;gap:8px;align-items:center;border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.band-row input{border:1px solid var(--line);background:var(--paper);border-radius:8px;padding:5px 8px;min-width:0;font-weight:600}
+.band-row .pill{min-width:14px}
+.add-col{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;border:1px dashed var(--line);border-radius:12px;padding:12px}
+.add-col label{display:grid;gap:3px;font-size:12.5px;color:var(--muted)}
+.add-col input,.add-col select{border:1px solid var(--line);background:var(--soft);border-radius:8px;padding:6px 10px;min-width:0;font-weight:600}
+.sub{font-family:var(--f-display);font-weight:500;font-size:15px;margin:0 0 8px}
+tbody td{padding:6px;border-bottom:1px solid var(--line);text-align:center;vertical-align:middle}
+tbody tr:hover td{background:var(--soft)}
+td.idx{color:var(--muted);font-size:13px;width:40px}
+td.name{text-align:right;padding-inline-start:10px;min-width:180px}
+td.name input{width:100%;border:1px solid transparent;background:transparent;border-radius:8px;padding:6px 8px;font-weight:600;font-size:15px}
+td.name input:hover{border-color:var(--line)}
+td.name input:focus{border-color:var(--gold);background:var(--paper);outline:none}
+.g{width:64px;text-align:center;border:1px solid var(--line);border-radius:9px;padding:7px 4px;background:var(--paper);font-size:15px;font-weight:600;font-variant-numeric:tabular-nums;-moz-appearance:textfield}
+.g::-webkit-outer-spin-button,.g::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.g:focus{outline:none;border-color:var(--focus);box-shadow:0 0 0 3px color-mix(in srgb,var(--focus) 28%,transparent)}
+.g.c-p{border-bottom:3px solid var(--c-p)} .g.c-h{border-bottom:3px solid var(--c-h)}
+.g.c-w{border-bottom:3px solid var(--c-w)} .g.c-e{border-bottom:3px solid var(--c-e)}
+.g.err{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 10%,var(--paper));color:var(--bad)}
+.g.empty{background:var(--soft)}
+.total{font-family:var(--f-display);font-weight:700;font-size:17px;min-width:70px}
+.total small{display:block;font-family:var(--f-body);font-weight:500;font-size:11.5px;color:var(--muted)}
+.bar{height:5px;border-radius:99px;background:var(--soft);overflow:hidden;margin-top:3px;width:70px;margin-inline:auto}
+.bar i{display:block;height:100%;border-radius:99px}
+.pill{display:inline-block;padding:3px 10px;border-radius:99px;font-size:12.5px;font-weight:700;white-space:nowrap}
+.pill.a{background:color-mix(in srgb,var(--ok) 16%,transparent);color:var(--ok)}
+.pill.b{background:color-mix(in srgb,var(--c-h) 16%,transparent);color:var(--c-h)}
+.pill.c{background:color-mix(in srgb,var(--c-p) 14%,transparent);color:var(--c-p)}
+.pill.d{background:color-mix(in srgb,var(--warn) 18%,transparent);color:var(--warn)}
+.pill.f{background:color-mix(in srgb,var(--bad) 15%,transparent);color:var(--bad)}
+.pill.n{background:var(--soft);color:var(--muted)}
+.del{border:0;background:transparent;color:var(--muted);cursor:pointer;border-radius:8px;padding:6px 8px;font-size:13px}
+.del:hover{color:var(--bad);background:color-mix(in srgb,var(--bad) 10%,transparent)}
+.del.confirm{background:var(--bad);color:#fff}
+.rank{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;font-size:12px;font-weight:700;background:var(--gold-soft);color:var(--gold);margin-inline-start:6px;vertical-align:middle}
+td.term-t{font-weight:600}
+tfoot td{padding:10px 6px;text-align:center;font-weight:700;color:var(--muted);font-size:13px;background:var(--soft)}
+tfoot td.name{text-align:right;padding-inline-start:16px}
+
+.empty-state{padding:40px 16px;text-align:center;color:var(--muted);display:grid;gap:6px;justify-items:center}
+.empty-state b{font-family:var(--f-display);font-size:20px;color:var(--ink);font-weight:500}
+
+/* ---------- add ---------- */
+.add{padding:18px;display:grid;gap:12px}
+.add-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:760px){.add-grid{grid-template-columns:1fr}}
+.add input[type=text],.add textarea{width:100%;border:1px solid var(--line);background:var(--soft);border-radius:10px;padding:9px 12px;min-width:0}
+.add textarea{min-height:92px;resize:vertical}
+.add form{display:grid;gap:8px;min-width:0}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--muted)}
+.toast{position:fixed;bottom:calc(18px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:9px 18px;border-radius:99px;font-size:14px;font-weight:600;box-shadow:var(--shadow);z-index:20}
+/* ---------- home-screen guide ---------- */
+.install{padding:18px;display:grid;gap:14px}
+.install h2{font-family:var(--f-display);font-weight:500;font-size:19px;margin:0}
+.install-head p{margin:4px 0 0}
+.link-box{display:flex;gap:8px;flex-wrap:wrap}
+.link-box input{flex:1 1 240px;min-width:0;border:1px solid var(--line);background:var(--soft);border-radius:10px;padding:8px 12px;font-size:14px;text-align:left}
+.os-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.os{border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.os.mine{border-color:var(--gold);box-shadow:0 0 0 3px color-mix(in srgb,var(--gold) 22%,transparent)}
+.os h3{margin:0 0 8px;font-size:16px;display:flex;align-items:center;gap:8px}
+.os-badge{display:none;font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;background:var(--gold-soft);color:var(--gold)}
+.os.mine .os-badge{display:inline-block}
+.os.mine .os-badge::after{content:"جهازك"}
+.os ol{margin:0;padding-inline-start:20px;display:grid;gap:6px}
+.key{display:inline-grid;place-items:center;min-width:24px;height:22px;padding:0 5px;border:1px solid var(--line);border-bottom-width:2px;border-radius:6px;background:var(--soft);font-size:13px;vertical-align:middle}
+
+/* ---------- phone & small tablet: rows become cards ---------- */
+@media (max-width:720px){
+  body{font-size:15px}
+  .band .wrap{padding-block:20px 26px;gap:14px}
+  .band-top{align-items:stretch}
+  .band-actions{width:100%}
+  .band-actions .btn{flex:1 1 40%;justify-content:center}
+  .install{padding:14px}
+  .meta{grid-template-columns:1fr 1fr;gap:8px}
+  .meta label:first-child{grid-column:1/-1}
+  .meta input{font-size:16px}
+  main.wrap{padding-block:16px 40px;gap:14px}
+  .stats{grid-template-columns:1fr 1fr;gap:10px}
+  .stat{padding:10px 12px}
+  .stat b{font-size:22px}
+  .panel{border-radius:14px}
+  .tabs{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding:0 6px!important}
+  .tabs::-webkit-scrollbar,.subtabs::-webkit-scrollbar{display:none}
+  .tab{white-space:nowrap;padding:10px 12px}
+  .tab.sum{margin-inline-start:0}
+  .subtabs{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding:10px 12px}
+  .subtab{white-space:nowrap;flex:none}
+  .subtab.s{margin-inline-start:0}
+  .toolbar{padding:12px}
+  .search{max-width:none;flex-basis:100%;font-size:16px}
+  .toolbar .row{width:100%}
+  .toolbar select{flex:1}
+  .table-scroll{overflow:visible;padding:12px}
+  table{min-width:0;display:block}
+  thead,tfoot{display:none}
+  tbody{display:grid;gap:10px}
+  tbody tr{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;border:1px solid var(--line);border-radius:12px;padding:10px;background:var(--paper)}
+  tbody tr:hover td{background:transparent}
+  tbody td{display:block;border:0;padding:0;text-align:center;min-width:0}
+  tbody td[data-label]::before{content:attr(data-label);display:block;font-size:11.5px;font-weight:600;color:var(--muted);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  tbody td.gc::before{color:inherit}
+  td.idx{display:none}
+  td.name{order:-2;grid-column:span 2;min-width:0;display:flex;align-items:center;padding:0}
+  td.act{order:-1;text-align:left;align-self:center}
+  td.name input{font-size:16px;padding:6px 4px}
+  .g{width:100%;font-size:16px;padding:9px 4px;color:var(--ink)}
+  td.total{grid-column:span 2;display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;text-align:right;background:var(--soft)!important;border-radius:10px;padding:8px 10px}
+  td.total::before{width:100%;margin:0}
+  td.total small{display:inline}
+  td.total .bar{flex:1;margin:0;min-width:60px}
+  td.gr{display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--soft)!important;border-radius:10px;padding:8px 4px}
+  td.term-t{background:var(--soft)!important;border-radius:10px;padding:8px 4px;font-size:16px}
+  tbody tr td[colspan]{grid-column:1/-1}
+  .max-grid{grid-template-columns:1fr 1fr}
+  .edit-grid{grid-template-columns:1fr}
+  .settings,.add{padding:14px}
+  .row{gap:8px}
+  .seg button{padding:6px 10px}
+  .add-col{grid-template-columns:1fr 1fr}
+  .add-col .btn{grid-column:1/-1;justify-content:center}
+  .add input[type=text],.add textarea{font-size:16px}
+  .legend{flex-direction:column;gap:4px}
+}
+@media (max-width:380px){
+  tbody tr{grid-template-columns:repeat(2,minmax(0,1fr))}
+  td.name{grid-column:span 1}
+  td.total{grid-column:auto}
+  tbody tr{grid-auto-flow:dense}
+  .stats{grid-template-columns:1fr 1fr}
+}
+</style>
+
+<header class="band">
+  <div class="wrap">
+    <div class="band-top">
+      <div>
+        <div class="eyebrow" id="eyebrow">سجل متابعة التحصيل الدراسي</div>
+        <h1 id="title">كشف درجات الطلاب</h1>
+      </div>
+      <div class="band-actions">
+        <button class="btn btn-ghost-light" id="toggleInstall" type="button" aria-expanded="false">📱 أيقونة على الجوال</button>
+        <button class="btn btn-ghost-light" id="toggleSettings" type="button" aria-expanded="false">⚙ إعدادات الكشف</button>
+        <button class="btn btn-gold" id="exportBtn" type="button" hidden>⬇ تصدير Excel (CSV)</button>
+        <button class="btn btn-ghost-light" id="backupBtn" type="button" hidden>💾 نسخة احتياطية</button>
+        <label class="btn btn-ghost-light" id="restoreLbl" hidden>↺ استعادة<input type="file" id="restoreFile" accept=".json,application/json" hidden></label>
+      </div>
+    </div>
+    <div class="meta">
+      <label>المدرسة<input id="m-school" data-k="school" placeholder="اسم المدرسة"></label>
+      <label>المادة<input id="m-subject" data-k="subject" placeholder="مثال: الرياضيات"></label>
+      <label>الصف / الشعبة<input id="m-className" data-k="className" placeholder="مثال: الثاني متوسط / أ"></label>
+      <label>المعلم / المعلمة<input id="m-teacher" data-k="teacher" placeholder="الاسم"></label>
+      <label>العام الدراسي<input id="m-year" data-k="year" placeholder="١٤٤٨ هـ"></label>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="status"><span class="dot" id="dot"></span><span id="statusText">جارٍ تحميل الكشف…</span></div>
+
+  <section class="panel install" id="install" hidden>
+    <div class="install-head">
+      <h2>أضف الكشف كأيقونة على شاشة الجوال</h2>
+      <p class="hint" id="installNote">يفتح الكشف بلمسة واحدة مثل التطبيق، والدرجات نفسها محفوظة ومتزامنة بين الجوال والكمبيوتر. تحتاج أن تكون مسجّل الدخول في Claude على المتصفح.</p>
+    </div>
+    <div class="link-box">
+      <input id="appLink" readonly value="https://claude.ai/artifact/1jmWmcy2Uwdmzn6pCu1yJ2" aria-label="رابط الكشف" dir="ltr">
+      <button class="btn btn-ink" id="copyLink" type="button">نسخ الرابط</button>
+    </div>
+    <div class="os-grid">
+      <article class="os" id="os-ios">
+        <h3><span class="os-badge"></span>آيفون (Safari)</h3>
+        <ol>
+          <li>انسخ الرابط أعلاه وافتحه في متصفح <b>Safari</b><span class="claude-only"> (ليس داخل تطبيق Claude)</span>.</li>
+          <li>اضغط زر <b>المشاركة</b> <span class="key">⬆︎</span> أسفل الشاشة.</li>
+          <li>مرّر للأسفل واختر <b>«إضافة إلى الشاشة الرئيسية»</b>.</li>
+          <li>اكتب اسمًا مثل <b>«كشف الدرجات»</b> ثم اضغط <b>«إضافة»</b>.</li>
+        </ol>
+      </article>
+      <article class="os" id="os-android">
+        <h3><span class="os-badge"></span>أندرويد (Chrome)</h3>
+        <ol>
+          <li>انسخ الرابط أعلاه وافتحه في متصفح <b>Chrome</b>.</li>
+          <li>اضغط زر القائمة <span class="key">⋮</span> أعلى الشاشة.</li>
+          <li>اختر <b>«إضافة إلى الشاشة الرئيسية»</b> أو <b>«تثبيت التطبيق»</b>.</li>
+          <li>اكتب اسمًا مثل <b>«كشف الدرجات»</b> ثم اضغط <b>«إضافة»</b>.</li>
+        </ol>
+      </article>
+    </div>
+  </section>
+
+  <section class="panel settings" id="settings" hidden>
+    <h2>إعدادات الكشف</h2>
+    <div class="row">
+      <span class="hint">عدد الفصول الدراسية:</span>
+      <div class="seg" id="termSeg">
+        <button type="button" data-n="2" aria-pressed="false">فصلان</button>
+        <button type="button" data-n="3" aria-pressed="true">ثلاثة فصول</button>
+      </div>
+      <span class="hint" style="margin-inline-start:12px">الفترات في كل فصل:</span>
+      <div class="seg" id="periodSeg">
+        <button type="button" data-p="1" aria-pressed="false">فترة واحدة</button>
+        <button type="button" data-p="2" aria-pressed="true">فترتان</button>
+      </div>
+    </div>
+    <div class="row">
+      <label class="hint" for="unitCount">عدد اختبارات الوحدات في كل فصل:</label>
+      <input id="unitCount" type="number" min="0" max="8" style="width:72px;border:1px solid var(--line);background:var(--c-u-bg);border-radius:8px;padding:6px 8px;font-weight:600;text-align:center">
+      <span class="hint">(من ٠ إلى ٨ — اجعله ٠ لإخفاء أعمدة الوحدات)</span>
+    </div>
+    <div>
+      <div class="hint" style="margin-bottom:8px">الدرجة العظمى لكل بند (في كل فصل):</div>
+      <div class="max-grid">
+        <label class="max-card" style="background:var(--c-p-bg)"><span class="k-p">المشاركة</span><input id="max-p" type="number" min="1" max="100" data-mk="p"></label>
+        <label class="max-card" style="background:var(--c-h-bg)"><span class="k-h">الواجبات</span><input id="max-h" type="number" min="1" max="100" data-mk="h"></label>
+        <label class="max-card" style="background:var(--c-w-bg)"><span class="k-w">أوراق العمل</span><input id="max-w" type="number" min="1" max="100" data-mk="w"></label>
+        <label class="max-card" id="maxUCard" style="background:var(--c-u-bg)"><span class="k-u">اختبار كل وحدة</span><input id="max-u" type="number" min="1" max="100" data-mk="u"></label>
+        <label class="max-card" style="background:var(--c-e-bg)"><span class="k-e">الاختبار الفتري</span><input id="max-e" type="number" min="1" max="100" data-mk="e"></label>
+      </div>
+    </div>
+    <div class="hint" id="maxSum"></div>
+    <div>
+      <h3 class="sub">أسماء البنود</h3>
+      <div class="edit-grid" id="labelEdit"></div>
+    </div>
+    <form id="addCol" class="add-col">
+      <h3 class="sub" style="grid-column:1/-1">إضافة خانة جديدة</h3>
+      <label>اسم الخانة<input id="colName" placeholder="مثال: ورقة عمل ٢" autocomplete="off"></label>
+      <label>الدرجة العظمى<input id="colMax" type="number" min="0.25" max="100" step="0.25" value="10"></label>
+      <label>مكانها بعد<select id="colAfter">
+        <option value="p">المشاركة</option><option value="h">الواجبات</option>
+        <option value="w" selected>أوراق العمل</option><option value="e">الاختبار الفتري</option>
+      </select></label>
+      <button class="btn btn-ink" type="submit" style="align-self:end">+ إضافة الخانة</button>
+    </form>
+    <div>
+      <h3 class="sub">أسماء الفصول</h3>
+      <div class="edit-grid" id="termEdit"></div>
+    </div>
+    <div>
+      <h3 class="sub">التقديرات (الحد الأدنى للنسبة)</h3>
+      <div class="edit-grid" id="bandEdit"></div>
+      <div class="hint" style="margin-top:6px">التقدير الرابع هو حد النجاح المستخدم في «نسبة النجاح». اترك أي خانة فارغة لتعود لقيمتها الأصلية.</div>
+    </div>
+  </section>
+
+  <section class="stats" id="stats"></section>
+
+  <section class="panel">
+    <div class="tabs" role="tablist" id="tabs" style="padding:0 10px"></div>
+    <div class="subtabs" id="subtabs" hidden></div>
+    <div class="toolbar">
+      <input class="search" id="search" type="search" placeholder="ابحث باسم الطالب…" aria-label="بحث">
+      <div class="row">
+        <label class="hint" for="sort">ترتيب:</label>
+        <select id="sort">
+          <option value="order">ترتيب الإدخال</option>
+          <option value="name">أبجدي</option>
+          <option value="total">الأعلى درجة</option>
+          <option value="low">الأقل درجة</option>
+        </select>
+      </div>
+    </div>
+    <div class="table-scroll" id="tableWrap"></div>
+  </section>
+
+  <section class="panel add">
+    <h2>إضافة طلاب</h2>
+    <div class="add-grid">
+      <form id="addOne">
+        <label class="hint" for="newName">طالب واحد</label>
+        <div class="row" style="flex-wrap:nowrap">
+          <input type="text" id="newName" placeholder="اكتب اسم الطالب ثم اضغط إضافة" autocomplete="off">
+          <button class="btn btn-ink" type="submit">إضافة</button>
+        </div>
+      </form>
+      <form id="addMany">
+        <label class="hint" for="bulk">عدة طلاب دفعة واحدة (اسم في كل سطر — يمكنك اللصق من Excel)</label>
+        <textarea id="bulk" placeholder="محمد أحمد&#10;سارة خالد&#10;عبدالله سعيد"></textarea>
+        <div><button class="btn btn-ghost" type="submit">إضافة القائمة</button></div>
+      </form>
+    </div>
+    <div class="legend">
+      <span>⏎ Enter ينقلك للطالب التالي في نفس العمود</span>
+      <span>الخانة الحمراء = درجة أكبر من العظمى</span>
+      <span>الخانة الفارغة لا تُحتسب صفرًا حتى تُدخل</span>
+    </div>
+  </section>
+</main>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(() => {
+  const BASE_LABELS = {p:"المشاركة",h:"الواجبات",w:"أوراق العمل",e:"الاختبار الفتري"};
+  const BASE_SHORT = {p:"مشاركة",h:"واجبات",w:"أوراق عمل",e:"اختبار فتري"};
+  const DEFAULT_TERMS = ["الفصل الأول","الفصل الثاني","الفصل الثالث"];
+  const termName = i => ((config.termNames||[])[i] || "").trim() || DEFAULT_TERMS[i];
+  const BAND_CLS = ["a","b","c","d","f"];
+  const DEFAULT_BANDS = [{label:"ممتاز",min:90},{label:"جيد جدًا",min:80},{label:"جيد",min:70},{label:"مقبول",min:50},{label:"يحتاج دعم",min:0}];
+  const bands = () => DEFAULT_BANDS.map((d,i)=>{ const b=(config.bands||[])[i]||{}; return {label:(b.label||"").trim()||d.label, min:i===4?0:(Number.isFinite(+b.min)&&b.min!==""&&b.min!=null?+b.min:d.min)}; });
+  const passMin = () => bands()[3].min;
+  const ORD = ["الأولى","الثانية","الثالثة","الرابعة","الخامسة","السادسة","السابعة","الثامنة"];
+  const DEFAULT_CONFIG = {school:"",subject:"",className:"",teacher:"",year:"",termCount:2,periodCount:2,unitCount:0,max:{p:10,h:10,w:10,u:5,e:10}};
+  // columns: participation, homework, worksheets, unit tests u1..uN, end-of-term exam
+  // extra columns: config.extra = [{id:"x…", after:"p|h|w|e", name}], max kept in config.max[id]
+  const extras = () => (config.extra||[]).filter(x=>x && x.id);
+  const extraOf = k => extras().find(x=>x.id===k) || {};
+  const AFTER_NAMES = {p:"المشاركة",h:"الواجبات",w:"أوراق العمل",e:"الاختبار الفتري"};
+  const keys = () => {
+    const units = Array.from({length:config.unitCount||0},(_,i)=>"u"+(i+1));
+    const after = a => extras().filter(x=>x.after===a).map(x=>x.id);
+    return ["p",...after("p"),"h",...after("h"),"w",...after("w"),...units,"e",...after("e")];
+  };
+  const maxOf = k => +(k[0]==="u" ? config.max.u : config.max[k]) || 0;
+  const custom = k => ((config.labels||{})[k] || "").trim();
+  const baseLabel = k => k[0]==="x" ? (extraOf(k).name||"خانة") : k[0]==="u" ? "اختبار الوحدة "+ORD[+k.slice(1)-1] : BASE_LABELS[k];
+  const baseShort = k => k[0]==="x" ? (extraOf(k).name||"خانة") : k[0]==="u" ? "وحدة "+(+k.slice(1)).toLocaleString("ar-SA") : BASE_SHORT[k];
+  const label = k => custom(k) || baseLabel(k);
+  const short = k => custom(k) || baseShort(k);
+  const cls = k => k[0]==="u" ? "u" : k[0]==="x" ? (extraOf(k).after||"w") : k;
+
+  let config = structuredClone(DEFAULT_CONFIG);
+  let students = [];           // [{id,name,order,grades:{t1:{p,h,w,e}}}]
+  let tab = "t1", sub = "1";
+  let mode = "loading";        // live | local | loading
+  let db = null, canWrite = true;
+  let pendingDelete = null, pendingCol = null;
+
+  const $ = s => document.querySelector(s);
+  const ar = n => Number(n).toLocaleString("ar-SA",{maximumFractionDigits:1});
+  const esc = s => String(s ?? "").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+  // ---------- local fallback ----------
+  const LS = "gradebook-v1";
+  function loadLocal(){
+    try{ const raw = localStorage.getItem(LS); if(raw){ const d = JSON.parse(raw); config = {...DEFAULT_CONFIG,...d.config,max:{...DEFAULT_CONFIG.max,...(d.config||{}).max}}; students = d.students||[]; return; } }catch(e){}
+    config = {...DEFAULT_CONFIG,school:"مدرسة (مثال)",subject:"الرياضيات",className:"الثاني متوسط / أ",teacher:"",year:"١٤٤٨ هـ"};
+    const ex = [["محمد عبدالله (مثال)",[9,10,8,8]],["سارة أحمد (مثال)",[10,9,10,10]],["خالد سعيد (مثال)",[7,6,8,6]],["نورة فهد (مثال)",[8,10,9,8]],["عمر يوسف (مثال)",[5,4,6,4]]];
+    students = ex.map(([name,g],i)=>({id:"ex"+i,name,order:i,grades:{t1:{p:g[0],h:g[1],w:g[2],e:g[3]}}}));
+  }
+  function saveLocal(){ try{ localStorage.setItem(LS,JSON.stringify({config,students})); }catch(e){} }
+
+  // ---------- write queue (one write at a time per doc) ----------
+  const queues = new Map(); let inflight = 0;
+  function enqueue(path, fn){
+    const prev = queues.get(path) || Promise.resolve();
+    inflight++; setStatus();
+    const next = prev.then(fn).catch(err => {
+      if(err && err.code === "invalid_argument"){ canWrite = false; toast("ليست لديك صلاحية تعديل هذا الكشف"); render(); }
+      else if(err && err.code === "quota_exceeded"){ toast("امتلأت مساحة الكشف — احذف بعض الطلاب"); }
+      else toast("تعذّر الحفظ، حاول مرة أخرى");
+    }).finally(()=>{ inflight--; setStatus(); });
+    queues.set(path,next); return next;
+  }
+
+  function saveConfig(){
+    if(mode==="live") enqueue("config/main",()=>db.doc("config/main").set(structuredClone(config)));
+    else saveLocal();
+  }
+  function saveGrade(s, term, key, val){
+    if(mode==="live") enqueue("students/"+s.id,()=>db.doc("students/"+s.id).update({grades:{[term]:{[key]:val}}}));
+    else saveLocal();
+  }
+  function saveName(s){
+    if(mode==="live") enqueue("students/"+s.id,()=>db.doc("students/"+s.id).update({name:s.name}));
+    else saveLocal();
+  }
+  function addStudents(names){
+    let base = students.reduce((m,s)=>Math.max(m,s.order||0),0)+1;
+    names.forEach((name,i)=>{
+      const s = {name,order:base+i,grades:{}};
+      if(mode==="live"){ const ref = db.collection("students").doc(); s.id = ref.id; students.push(s); enqueue(ref.path,()=>ref.set({name:s.name,order:s.order,grades:{}})); }
+      else { s.id = "s"+Date.now().toString(36)+i; students.push(s); }
+    });
+    if(mode!=="live") saveLocal();
+    render();
+    toast(names.length===1 ? "أُضيف "+names[0] : "أُضيف "+ar(names.length)+" طلاب");
+  }
+  function removeStudent(id){
+    const s = students.find(x=>x.id===id); students = students.filter(x=>x.id!==id);
+    if(mode==="live") enqueue("students/"+id,()=>db.doc("students/"+id).delete()); else saveLocal();
+    render(); if(s) toast("حُذف "+s.name);
+  }
+
+  // ---------- calc ----------
+  // each term has 1–2 periods; period 1 grades live in grades["t1"], period 2 in grades["t1b"]
+  const termKeys = () => Array.from({length:config.termCount},(_,i)=>"t"+(i+1));
+  const pc = () => config.periodCount===1 ? 1 : 2;
+  const periodKeys = t => pc()===2 ? [t, t+"b"] : [t];
+  const DEFAULT_PERIODS = ["الفترة الأولى","الفترة الثانية"];
+  const periodName = j => ((config.periodNames||[])[j] || "").trim() || DEFAULT_PERIODS[j];
+  const sheetMax = () => keys().reduce((a,k)=>a+maxOf(k),0);
+  const termMax = () => sheetMax()*pc();
+  const num = v => (v===null||v===undefined||v==="") ? null : Number(v);
+  function sheetTotal(s,g){
+    const o = (s.grades||{})[g]||{}; let sum=0, any=false;
+    keys().forEach(k=>{ const v=num(o[k]); if(v!==null && !isNaN(v)){ sum+=v; any=true; } });
+    return any ? sum : null;
+  }
+  const addUp = vals => { let sum=0, any=false; vals.forEach(v=>{ if(v!==null){sum+=v;any=true;} }); return any?sum:null; };
+  const termTotal = (s,t) => addUp(periodKeys(t).map(g=>sheetTotal(s,g)));
+  const yearTotal = s => addUp(termKeys().map(t=>termTotal(s,t)));
+  // current view: "all" (year), "term" (period sums of one term), "sheet" (grade entry for one period)
+  const view = () => tab==="all" ? "all" : (pc()===2 && sub==="sum") ? "term" : "sheet";
+  const gkey = () => (pc()===2 && sub==="2") ? tab+"b" : tab;
+  const totalCur = s => view()==="all" ? yearTotal(s) : view()==="term" ? termTotal(s,tab) : sheetTotal(s,gkey());
+  const maxCur = () => view()==="all" ? termMax()*config.termCount : view()==="term" ? termMax() : sheetMax();
+  function grade(pct){
+    if(pct===null) return ["n","—"];
+    const b = bands(); for(let i=0;i<b.length;i++) if(pct>=b[i].min) return [BAND_CLS[i],b[i].label];
+    return ["f",b[4].label];
+  }
+  const BAND_COLOR = {a:"var(--ok)",b:"var(--c-h)",c:"var(--c-p)",d:"var(--warn)",f:"var(--bad)",n:"var(--muted)"};
+  const barColor = pct => BAND_COLOR[grade(pct)[0]];
+
+  // ---------- render ----------
+  function setStatus(){
+    const dot=$("#dot"), t=$("#statusText");
+    dot.className = "dot " + (inflight ? "saving" : mode==="live" ? "live" : mode==="local" ? "local" : "");
+    t.textContent = inflight ? "جارٍ الحفظ…" :
+      mode==="live" ? (canWrite ? "محفوظ تلقائيًا ومتزامن — أي تعديل يُحفظ فور الخروج من الخانة" : "عرض فقط — ليست لديك صلاحية التعديل") :
+      mode==="local" ? "محفوظ تلقائيًا في هذا المتصفح على هذا الجهاز — خذ «نسخة احتياطية» بين حين وآخر (الطلاب المعلَّمون «مثال» للتجربة ويمكن حذفهم)" :
+      "جارٍ تحميل الكشف…";
+  }
+
+  function renderHeader(){
+    ["school","subject","className","teacher","year"].forEach(k=>{
+      const el=$("#m-"+k); if(document.activeElement!==el) el.value=config[k]||""; el.disabled=!canWrite; });
+    $("#title").textContent = config.subject ? "كشف درجات " + config.subject : "كشف درجات الطلاب";
+    $("#eyebrow").textContent = [config.school, config.className, config.year].filter(Boolean).join(" · ") || "سجل متابعة التحصيل الدراسي";
+    ["p","h","w","u","e"].forEach(k=>{ const el=$("#max-"+k); if(document.activeElement!==el) el.value=config.max[k]; el.disabled=!canWrite; });
+    const settingsEl=$("#settings");
+    if(!settingsEl.contains(document.activeElement) || !document.activeElement.matches("#labelEdit input,#termEdit input,#bandEdit input")){
+      const dis = canWrite ? "" : "disabled";
+      $("#labelEdit").innerHTML = keys().map(k=>`<label>${k[0]==="x"?`<span style="display:flex;justify-content:space-between;gap:6px">خانة مضافة (من ${ar(maxOf(k))})${canWrite?`<button type="button" class="del${pendingCol===k?" confirm":""}" data-delcol="${k}" style="padding:0 6px">${pendingCol===k?"تأكيد الحذف":"حذف الخانة"}</button>`:""}</span>`:esc(baseLabel(k))}<input id="le-${k}" data-le="${k}" value="${esc(custom(k))}" placeholder="${esc(baseShort(k))}" ${dis}></label>`).join("");
+      $("#termEdit").innerHTML = termKeys().map((t,i)=>`<label>${DEFAULT_TERMS[i]}<input id="te-${i}" data-te="${i}" value="${esc(((config.termNames||[])[i]||""))}" placeholder="${DEFAULT_TERMS[i]}" ${dis}></label>`).join("")
+        + (pc()===2 ? DEFAULT_PERIODS.map((p,j)=>`<label>${p}<input id="pe-${j}" data-pe="${j}" value="${esc(((config.periodNames||[])[j]||""))}" placeholder="${p}" ${dis}></label>`).join("") : "");
+      const b=bands();
+      $("#bandEdit").innerHTML = b.map((x,i)=>`<div class="band-row"><span class="pill ${BAND_CLS[i]}">&nbsp;</span><input id="bl-${i}" data-bl="${i}" value="${esc(x.label)}" aria-label="اسم التقدير" ${dis}>${i===4?`<span class="hint">أقل من ${ar(b[3].min)}٪</span>`:`<input id="bm-${i}" data-bm="${i}" type="number" min="0" max="100" value="${x.min}" aria-label="الحد الأدنى للنسبة" ${dis}>`}</div>`).join("");
+    }
+    const uc=$("#unitCount"); if(document.activeElement!==uc) uc.value=config.unitCount||0; uc.disabled=!canWrite;
+    $("#maxUCard").style.opacity = config.unitCount ? "1" : ".5";
+    document.querySelectorAll("#termSeg button").forEach(b=>{ b.setAttribute("aria-pressed", String(+b.dataset.n===config.termCount)); b.disabled=!canWrite; });
+    document.querySelectorAll("#periodSeg button").forEach(b=>{ b.setAttribute("aria-pressed", String(+b.dataset.p===pc())); b.disabled=!canWrite; });
+    $("#maxSum").textContent = (pc()===2?"مجموع الفترة: "+ar(sheetMax())+" درجة — ":"")+"مجموع الفصل: "+ar(termMax())+" درجة"+(config.unitCount?" (منها "+ar(config.unitCount*maxOf("u1")*pc())+" لاختبارات الوحدات)":"")+" — المجموع السنوي: "+ar(termMax()*config.termCount)+" درجة.";
+  }
+
+  function renderTabs(){
+    const ts = termKeys(); if(tab!=="all" && !ts.includes(tab)) tab="t1";
+    $("#tabs").innerHTML = ts.map((t,i)=>`<button class="tab" role="tab" data-tab="${t}" aria-selected="${tab===t}">${esc(termName(i))}</button>`).join("")
+      + `<button class="tab sum" role="tab" data-tab="all" aria-selected="${tab==="all"}">∑ المجموع السنوي</button>`;
+    const st=$("#subtabs"); st.hidden = tab==="all" || pc()!==2;
+    if(!["1","2","sum"].includes(sub)) sub="1";
+    st.innerHTML = `<span class="sub-of">${esc(termName(+tab.slice(1)-1||0))}</span>`
+      + [["1",periodName(0)],["2",periodName(1)],["sum","∑ مجموع الفصل"]].map(([v,n])=>`<button type="button" class="subtab${v==="sum"?" s":""}" data-sub="${v}" aria-pressed="${sub===v}">${esc(n)}</button>`).join("");
+  }
+
+  function renderStats(){
+    const mx = maxCur();
+    const vals = students.map(totalCur).filter(v=>v!==null);
+    const avg = vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : null;
+    const pass = vals.filter(v=>v/mx*100>=passMin()).length;
+    let top=null; students.forEach(s=>{const v=totalCur(s); if(v!==null && (!top||v>top.v)) top={n:s.name,v};});
+    const bandsCfg = bands(); const cnt={a:0,b:0,c:0,d:0,f:0}; vals.forEach(v=>cnt[grade(v/mx*100)[0]]++);
+    const dist = vals.length ? BAND_CLS.map((k,i)=>cnt[k]?`<i style="width:${cnt[k]/vals.length*100}%;background:${BAND_COLOR[k]}" title="${esc(bandsCfg[i].label)}: ${cnt[k]}"></i>`:"").join("") : "";
+    const scope = view()==="all" ? "السنة كاملة" : termName(+tab.slice(1)-1) + (view()==="sheet" && pc()===2 ? " — "+periodName(sub==="2"?1:0) : "");
+    $("#stats").innerHTML = `
+      <div class="stat"><span>عدد الطلاب</span><b>${ar(students.length)}</b><small>${ar(vals.length)} لهم درجات في ${scope}</small></div>
+      <div class="stat"><span>متوسط الصف</span><b>${avg===null?"—":ar(avg)}<span style="font-size:14px"> / ${ar(mx)}</span></b><small>${avg===null?"لا توجد درجات بعد":ar(avg/mx*100)+"٪"}</small></div>
+      <div class="stat"><span>الأعلى درجة</span><b>${top?ar(top.v):"—"}</b><small>${top?esc(top.n):"—"}</small></div>
+      <div class="stat"><span>نسبة النجاح (${ar(passMin())}٪ فأكثر)</span><b>${vals.length?ar(pass/vals.length*100)+"٪":"—"}</b><div class="dist">${dist}</div></div>`;
+  }
+
+  function sorted(){
+    const q = $("#search").value.trim();
+    let list = students.filter(s=>!q || (s.name||"").includes(q));
+    const by = $("#sort").value;
+    if(by==="name") list.sort((a,b)=>(a.name||"").localeCompare(b.name||"","ar"));
+    else if(by==="total"||by==="low"){ const d = by==="total"?-1:1; list.sort((a,b)=>((totalCur(a)??-1)-(totalCur(b)??-1))*d); }
+    else list.sort((a,b)=>(a.order||0)-(b.order||0));
+    return list;
+  }
+
+  function rankMap(){
+    const r = new Map(); const arr = students.map(s=>[s.id,totalCur(s)]).filter(x=>x[1]!==null).sort((a,b)=>b[1]-a[1]);
+    arr.slice(0,3).forEach(([id,v],i)=>{ if(v>0) r.set(id,i+1); }); return r;
+  }
+
+  function renderTable(){
+    const wrap = $("#tableWrap");
+    const active = document.activeElement; const activeId = active && active.id && wrap.contains(active) ? active.id : null;
+    const activeVal = activeId ? active.value : null; const sel = activeId && active.type!=="number" ? [active.selectionStart,active.selectionEnd] : null;
+
+    if(!students.length){
+      wrap.innerHTML = `<div class="empty-state"><b>الكشف فارغ</b><span>أضف أسماء طلابك من قسم «إضافة طلاب» بالأسفل، ثم ابدأ بإدخال الدرجات.</span></div>`;
+      return;
+    }
+    const list = sorted(); const mx = maxCur(); const ranks = rankMap(); const ro = canWrite ? "" : "disabled";
+    const G = gkey();
+    let head, rows, foot;
+    if(view()!=="sheet"){
+      // summary columns: terms (year view) or periods (term view)
+      const cols = view()==="all"
+        ? termKeys().map((t,i)=>({name:termName(i), max:termMax(), val:s=>termTotal(s,t)}))
+        : periodKeys(tab).map((g,j)=>({name:periodName(j), max:sheetMax(), val:s=>sheetTotal(s,g)}));
+      head = `<tr><th>#</th><th class="name">اسم الطالب</th>${cols.map(c=>`<th>${esc(c.name)}<br><small class="hint">من ${ar(c.max)}</small></th>`).join("")}<th>المجموع<br><small class="hint">من ${ar(mx)}</small></th><th>التقدير</th></tr>`;
+      rows = list.map((s,i)=>{
+        const tot = totalCur(s); const pct = tot===null?null:tot/mx*100; const [gc,gl]=grade(pct);
+        return `<tr><td class="idx">${ar(i+1)}</td><td class="name"><input id="n-${s.id}" data-name="${s.id}" value="${esc(s.name)}" aria-label="اسم الطالب" ${ro}>${ranks.has(s.id)?`<span class="rank" title="الترتيب">${ar(ranks.get(s.id))}</span>`:""}</td>
+          ${cols.map(c=>{const v=c.val(s);return `<td class="term-t" data-label="${esc(c.name)} · من ${ar(c.max)}">${v===null?'<span class="hint">—</span>':ar(v)}</td>`}).join("")}
+          <td class="total" data-label="المجموع · من ${ar(mx)}">${tot===null?"—":ar(tot)}<small>${pct===null?"":ar(pct)+"٪"}</small>${pct===null?"":`<div class="bar"><i style="width:${Math.min(100,pct)}%;background:${barColor(pct)}"></i></div>`}</td>
+          <td class="gr" data-label="التقدير"><span class="pill ${gc}">${gl}</span></td></tr>`;
+      }).join("");
+      const avg = f => { const v=students.map(f).filter(x=>x!==null); return v.length?ar(v.reduce((a,b)=>a+b,0)/v.length):"—"; };
+      foot = `<tr><td></td><td class="name">متوسط الصف</td>${cols.map(c=>`<td>${avg(c.val)}</td>`).join("")}<td>${avg(totalCur)}</td><td></td></tr>`;
+    } else {
+      head = `<tr><th>#</th><th class="name">اسم الطالب</th>${keys().map(k=>`<th><span class="cat k-${cls(k)}"><input class="h-name" id="hn-${k}" data-hname="${k}" value="${esc(short(k))}" aria-label="اسم العمود" title="اضغط لتعديل اسم العمود" ${ro}><em>من <input class="h-max" id="hm-${k}" data-hmax="${cls(k)==="u"?"u":k}" type="number" min="1" max="100" step="0.25" value="${maxOf(k)}" aria-label="الدرجة العظمى لـ ${esc(label(k))}" title="اضغط لتعديل الدرجة العظمى" ${ro}></em></span></th>`).join("")}<th>المجموع<br><small class="hint">من ${ar(mx)}</small></th><th>التقدير</th><th></th></tr>`;
+      rows = list.map((s,i)=>{
+        const g=(s.grades||{})[G]||{}; const tot=sheetTotal(s,G); const pct=tot===null?null:tot/mx*100; const [gc,gl]=grade(pct);
+        return `<tr><td class="idx">${ar(i+1)}</td>
+          <td class="name"><input id="n-${s.id}" data-name="${s.id}" value="${esc(s.name)}" aria-label="اسم الطالب" ${ro}>${ranks.has(s.id)?`<span class="rank" title="الترتيب في الفصل">${ar(ranks.get(s.id))}</span>`:""}</td>
+          ${keys().map(k=>{const v=num(g[k]); const bad=v!==null&&(v>maxOf(k)||v<0);
+            return `<td class="gc k-${cls(k)}" data-label="${esc(short(k))} · من ${ar(maxOf(k))}"><input class="g c-${cls(k)}${v===null?" empty":""}${bad?" err":""}" id="g-${s.id}-${G}-${k}" data-sid="${s.id}" data-k="${k}" type="number" inputmode="decimal" step="0.25" min="0" max="${maxOf(k)}" value="${v===null?"":v}" aria-label="${label(k)} — ${esc(s.name)}" ${ro}></td>`}).join("")}
+          <td class="total" data-label="المجموع · من ${ar(mx)}">${tot===null?"—":ar(tot)}<small>${pct===null?"":ar(pct)+"٪"}</small>${pct===null?"":`<div class="bar"><i style="width:${Math.min(100,pct)}%;background:${barColor(pct)}"></i></div>`}</td>
+          <td class="gr" data-label="التقدير"><span class="pill ${gc}">${gl}</span></td>
+          <td class="act">${canWrite?`<button class="del${pendingDelete===s.id?" confirm":""}" data-del="${s.id}" type="button">${pendingDelete===s.id?"تأكيد الحذف":"حذف"}</button>`:""}</td></tr>`;
+      }).join("");
+      const avgCells = keys().map(k=>{const v=students.map(s=>num(((s.grades||{})[G]||{})[k])).filter(x=>x!==null);return `<td>${v.length?ar(v.reduce((a,b)=>a+b,0)/v.length):"—"}</td>`}).join("");
+      const tv = students.map(s=>sheetTotal(s,G)).filter(x=>x!==null);
+      foot = `<tr><td></td><td class="name">متوسط الصف</td>${avgCells}<td>${tv.length?ar(tv.reduce((a,b)=>a+b,0)/tv.length):"—"}</td><td></td><td></td></tr>`;
+    }
+    wrap.innerHTML = `<table><thead>${head}</thead><tbody>${rows || `<tr><td colspan="${keys().length+5}"class="hint" style="padding:24px">لا يوجد طالب بهذا الاسم</td></tr>`}</tbody><tfoot>${foot}</tfoot></table>`;
+    if(activeId){ const el=document.getElementById(activeId); if(el){ el.value=activeVal; el.focus(); if(sel) try{el.setSelectionRange(sel[0],sel[1]);}catch(e){} } }
+  }
+
+  function render(){ renderHeader(); renderTabs(); renderStats(); renderTable(); setStatus(); }
+
+  // ---------- events ----------
+  let tt; function toast(msg){ const t=$("#toast"); t.textContent=msg; t.hidden=false; clearTimeout(tt); tt=setTimeout(()=>t.hidden=true,2200); }
+
+  $("#tabs").addEventListener("click",e=>{ const b=e.target.closest("[data-tab]"); if(!b) return; tab=b.dataset.tab; pendingDelete=null; try{localStorage.setItem(LS+"-tab",tab)}catch(_){}; renderTabs(); renderStats(); renderTable(); });
+  $("#subtabs").addEventListener("click",e=>{ const b=e.target.closest("[data-sub]"); if(!b) return; sub=b.dataset.sub; pendingDelete=null; try{localStorage.setItem(LS+"-sub",sub)}catch(_){}; renderTabs(); renderStats(); renderTable(); });
+  $("#periodSeg").addEventListener("click",e=>{ const b=e.target.closest("[data-p]"); if(!b) return; config.periodCount=+b.dataset.p; saveConfig(); render(); toast(+b.dataset.p===2?"كل فصل فيه فترتان":"فترة واحدة لكل فصل (درجات الفترة الثانية محفوظة)"); });
+  $("#search").addEventListener("input",renderTable);
+  $("#sort").addEventListener("change",renderTable);
+
+  const wrap = $("#tableWrap");
+  wrap.addEventListener("input",e=>{
+    const el=e.target; if(!el.classList.contains("g")) return;
+    const v = el.value===""?null:Number(el.value); const mx=maxOf(el.dataset.k);
+    el.classList.toggle("err", v!==null && (v>mx||v<0)); el.classList.toggle("empty", v===null);
+  });
+  wrap.addEventListener("change",e=>{
+    const el=e.target;
+    if(el.dataset.hname){
+      const k=el.dataset.hname; const v=el.value.trim();
+      config.labels={...(config.labels||{}),[k]:v}; saveConfig(); render();
+      toast(v ? "تغيّر اسم العمود إلى «"+v+"»" : "عاد اسم العمود للأصل"); return;
+    }
+    if(el.dataset.hmax){
+      const k=el.dataset.hmax; const v=Math.round(Number(el.value)*4)/4;
+      if(!v||v<=0){ el.value=config.max[k]; toast("الدرجة العظمى يجب أن تكون أكبر من صفر"); return; }
+      config.max={...config.max,[k]:v}; saveConfig(); render(); toast("حُدّثت الدرجة العظمى إلى "+ar(v)); return;
+    }
+    if(el.classList.contains("g")){
+      const s=students.find(x=>x.id===el.dataset.sid); if(!s) return;
+      let v = el.value===""?null:Number(el.value);
+      if(v!==null && (isNaN(v)||v<0)){ toast("أدخل رقمًا موجبًا"); el.value=""; v=null; }
+      if(v!==null && v>maxOf(el.dataset.k)) toast("تنبيه: الدرجة أكبر من العظمى ("+ar(maxOf(el.dataset.k))+")");
+      const G=gkey(); s.grades = s.grades||{}; s.grades[G] = {...(s.grades[G]||{}),[el.dataset.k]:v};
+      saveGrade(s,G,el.dataset.k,v); renderStats(); renderTable();
+    } else if(el.dataset.name){
+      const s=students.find(x=>x.id===el.dataset.name); const n=el.value.trim();
+      if(!s) return; if(!n){ el.value=s.name; toast("لا يمكن ترك الاسم فارغًا"); return; }
+      if(n!==s.name){ s.name=n; saveName(s); renderStats(); }
+    }
+  });
+  wrap.addEventListener("keydown",e=>{
+    const el=e.target;
+    if(e.key==="Enter" && (el.dataset.hname||el.dataset.hmax)){ e.preventDefault(); el.blur(); return; }
+    if(e.key!=="Enter" || !(el.classList.contains("g")||el.dataset.name)) return;
+    e.preventDefault();
+    const col = el.dataset.k || "name";
+    const sel = col==="name" ? "input[data-name]" : `input.g[data-k="${col}"]`;
+    const all=[...wrap.querySelectorAll(sel)]; const i=all.indexOf(el); const nx=all[i+(e.shiftKey?-1:1)];
+    el.blur(); if(nx){ nx.focus(); nx.select && nx.select(); }
+  });
+  wrap.addEventListener("click",e=>{
+    const b=e.target.closest("[data-del]"); if(!b) return;
+    if(pendingDelete===b.dataset.del){ pendingDelete=null; removeStudent(b.dataset.del); }
+    else { pendingDelete=b.dataset.del; renderTable(); setTimeout(()=>{ if(pendingDelete===b.dataset.del){pendingDelete=null; renderTable();} },4000); }
+  });
+
+  document.querySelectorAll(".meta input").forEach(inp=>inp.addEventListener("change",()=>{ config[inp.dataset.k]=inp.value.trim(); saveConfig(); renderHeader(); }));
+  document.querySelectorAll("[data-mk]").forEach(inp=>inp.addEventListener("change",()=>{
+    const v=Math.round(Number(inp.value)*4)/4; if(!v||v<=0){ inp.value=config.max[inp.dataset.mk]; toast("الدرجة العظمى يجب أن تكون أكبر من صفر"); return; }
+    config.max={...config.max,[inp.dataset.mk]:v}; saveConfig(); render(); toast("حُدّثت الدرجة العظمى");
+  }));
+  $("#addCol").addEventListener("submit",e=>{
+    e.preventDefault(); if(!canWrite) return;
+    const name=$("#colName").value.trim(); const mx=Math.round(Number($("#colMax").value)*4)/4; const after=$("#colAfter").value;
+    if(!name){ $("#colName").focus(); toast("اكتب اسم الخانة"); return; }
+    if(!mx||mx<=0){ toast("الدرجة العظمى يجب أن تكون أكبر من صفر"); return; }
+    if(keys().length>=16){ toast("وصلت للحد الأقصى من الخانات"); return; }
+    const id="x"+Date.now().toString(36);
+    config.extra=[...extras(),{id,after,name}]; config.max={...config.max,[id]:mx};
+    saveConfig(); render(); $("#colName").value=""; toast("أُضيفت خانة «"+name+"»");
+  });
+  $("#settings").addEventListener("click",e=>{
+    const b=e.target.closest("[data-delcol]"); if(!b) return; e.preventDefault();
+    const k=b.dataset.delcol;
+    if(pendingCol===k){ pendingCol=null; const n=short(k); config.extra=extras().filter(x=>x.id!==k); saveConfig(); render(); toast("حُذفت خانة «"+n+"»"); }
+    else { pendingCol=k; renderHeader(); setTimeout(()=>{ if(pendingCol===k){ pendingCol=null; renderHeader(); } },4000); }
+  });
+  $("#settings").addEventListener("change",e=>{
+    const el=e.target; const d=el.dataset;
+    if(d.le!==undefined){ config.labels={...(config.labels||{}),[d.le]:el.value.trim()}; }
+    else if(d.te!==undefined){ const a=[...(config.termNames||[])]; while(a.length<3) a.push(""); a[+d.te]=el.value.trim(); config.termNames=a; }
+    else if(d.pe!==undefined){ const a=[...(config.periodNames||[])]; while(a.length<2) a.push(""); a[+d.pe]=el.value.trim(); config.periodNames=a; }
+    else if(d.bl!==undefined || d.bm!==undefined){
+      const a=bands().map(x=>({...x})); const i=+(d.bl??d.bm);
+      if(d.bl!==undefined) a[i].label = el.value.trim() || DEFAULT_BANDS[i].label;
+      else { let v=el.value===""?DEFAULT_BANDS[i].min:Math.max(0,Math.min(100,Number(el.value)));
+        const hi = i>0 ? a[i-1].min : 101, lo = i<3 ? a[i+1].min : 0;
+        if(!(v<hi && v>lo)){ toast("الحد يجب أن يكون بين "+ar(lo)+" و"+ar(hi===101?100:hi)); el.value=a[i].min; return; }
+        a[i].min=v; }
+      config.bands=a;
+    } else return;
+    saveConfig(); render(); toast("حُفظ التعديل");
+  });
+  $("#unitCount").addEventListener("change",e=>{
+    const n=Math.max(0,Math.min(8,Math.round(Number(e.target.value)||0))); e.target.value=n;
+    if(n===config.unitCount) return; config.unitCount=n; saveConfig(); render();
+    toast(n ? "عدد اختبارات الوحدات: "+ar(n) : "أُخفيت اختبارات الوحدات (الدرجات المدخلة محفوظة)");
+  });
+  $("#termSeg").addEventListener("click",e=>{ const b=e.target.closest("[data-n]"); if(!b) return; config.termCount=+b.dataset.n; saveConfig(); render(); });
+  $("#toggleInstall").addEventListener("click",()=>{ const p=$("#install"); p.hidden=!p.hidden; $("#toggleInstall").setAttribute("aria-expanded",String(!p.hidden)); if(!p.hidden) p.scrollIntoView({behavior:"smooth",block:"start"}); });
+  { const ua=navigator.userAgent||""; const ios=/iPhone|iPad|iPod/i.test(ua)||(/Macintosh/.test(ua)&&navigator.maxTouchPoints>1); const and=/Android/i.test(ua);
+    if(ios) $("#os-ios").classList.add("mine"); if(and){ $("#os-android").classList.add("mine"); $(".os-grid").prepend($("#os-android")); } }
+  $("#copyLink").addEventListener("click",()=>{
+    const inp=$("#appLink");
+    try{ navigator.clipboard.writeText(inp.value).then(()=>toast("نُسخ الرابط"),()=>{ inp.select(); toast("حدّد الرابط وانسخه يدويًا"); }); }
+    catch(e){ inp.select(); toast("حدّد الرابط وانسخه يدويًا"); }
+  });
+  $("#appLink").addEventListener("focus",e=>e.target.select());
+  $("#toggleSettings").addEventListener("click",()=>{ const p=$("#settings"); p.hidden=!p.hidden; $("#toggleSettings").setAttribute("aria-expanded",String(!p.hidden)); });
+
+  $("#addOne").addEventListener("submit",e=>{ e.preventDefault(); if(!canWrite) return; const n=$("#newName").value.trim(); if(!n){ $("#newName").focus(); return; } addStudents([n]); $("#newName").value=""; $("#newName").focus(); });
+  $("#addMany").addEventListener("submit",e=>{ e.preventDefault(); if(!canWrite) return;
+    const names=$("#bulk").value.split(/\r?\n/).map(l=>l.split("\t")[0].trim()).filter(Boolean);
+    if(!names.length){ toast("الصق أسماء الطلاب، اسم في كل سطر"); return; }
+    addStudents(names); $("#bulk").value=""; });
+
+  // ---------- export ----------
+  let downloads=null;
+  function csv(){
+    const ts=termKeys(); const q=v=>`"${String(v??"").replace(/"/g,'""')}"`;
+    const h=["#","اسم الطالب"]; ts.forEach((t,i)=>{
+      periodKeys(t).forEach((g,j)=>{ const pre=termName(i)+(pc()===2?" - "+periodName(j):""); keys().forEach(k=>h.push(pre+" - "+label(k)+" ("+maxOf(k)+")")); if(pc()===2) h.push(pre+" - المجموع ("+sheetMax()+")"); });
+      h.push(termName(i)+" - المجموع ("+termMax()+")"); });
+    h.push("المجموع السنوي ("+termMax()*config.termCount+")","النسبة","التقدير");
+    const rows=[...students].sort((a,b)=>(a.order||0)-(b.order||0)).map((s,i)=>{
+      const r=[i+1,s.name]; ts.forEach(t=>{ periodKeys(t).forEach(gk=>{ const g=(s.grades||{})[gk]||{}; keys().forEach(k=>r.push(num(g[k])??"")); if(pc()===2) r.push(sheetTotal(s,gk)??""); }); r.push(termTotal(s,t)??""); });
+      const y=yearTotal(s); const p=y===null?null:y/(termMax()*config.termCount)*100; r.push(y??"", p===null?"":p.toFixed(1)+"%", grade(p)[1]); return r; });
+    const info=[["المدرسة",config.school],["المادة",config.subject],["الصف",config.className],["المعلم",config.teacher],["العام",config.year]].filter(x=>x[1]);
+    return "﻿"+[...info.map(r=>r.map(q).join(",")),"",h.map(q).join(","),...rows.map(r=>r.map(q).join(","))].join("\r\n");
+  }
+  // standalone = the page is hosted on another website (no Claude runtime): save files with a normal browser download
+  const standalone = !window.claude || !window.claude.use;
+  function browserSave(filename, text, type){
+    const url=URL.createObjectURL(new Blob([text],{type})); const a=document.createElement("a");
+    a.href=url; a.download=filename; document.body.appendChild(a); a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url),2000);
+  }
+  const baseName = () => "كشف-درجات"+(config.subject?"-"+config.subject:"");
+  $("#exportBtn").addEventListener("click",async()=>{
+    if(standalone){ browserSave(baseName()+".csv",csv(),"text/csv;charset=utf-8"); toast("نُزّل ملف Excel"); return; }
+    if(!downloads) return;
+    try{ await downloads.save({filename:baseName()+".csv",data:csv()}); toast("جُهّز الملف للتنزيل"); }
+    catch(e){ toast("لم يتم التنزيل"); }
+  });
+  $("#backupBtn").addEventListener("click",()=>{
+    browserSave(baseName()+"-نسخة-احتياطية.json",JSON.stringify({app:"gradebook",v:1,config,students},null,1),"application/json");
+    toast("نُزّلت النسخة الاحتياطية");
+  });
+  $("#restoreFile").addEventListener("change",async e=>{
+    const f=e.target.files[0]; e.target.value=""; if(!f) return;
+    try{
+      const d=JSON.parse(await f.text());
+      if(!d || d.app!=="gradebook" || !Array.isArray(d.students)) throw 0;
+      config={...DEFAULT_CONFIG,...d.config,max:{...DEFAULT_CONFIG.max,...((d.config||{}).max||{})}};
+      students=d.students.filter(s=>s&&s.id).map(s=>({id:String(s.id),name:String(s.name||""),order:+s.order||0,grades:s.grades||{}}));
+      saveLocal(); render(); toast("استُعيد الكشف: "+ar(students.length)+" طالب");
+    }catch(_){ toast("الملف غير صالح — اختر ملف النسخة الاحتياطية للكشف"); }
+  });
+
+  // ---------- boot ----------
+  if(standalone){
+    $("#exportBtn").hidden=false; $("#backupBtn").hidden=false; $("#restoreLbl").hidden=false;
+    try{ $("#appLink").value = location.protocol.startsWith("http") ? location.href.split("#")[0] : $("#appLink").value; }catch(_){}
+    $("#installNote").textContent = "يفتح الكشف بلمسة واحدة مثل التطبيق. الدرجات تُحفظ في متصفح كل جهاز على حدة، فاستخدم «نسخة احتياطية» و«استعادة» لنقلها بين الجوال والكمبيوتر.";
+    document.querySelectorAll(".claude-only").forEach(el=>el.remove());
+  }
+  try{ const t=localStorage.getItem(LS+"-tab"); if(t) tab=t; const u=localStorage.getItem(LS+"-sub"); if(u) sub=u; }catch(_){}
+  render();
+
+  function goLocal(){ if(mode==="live") return; mode="local"; loadLocal(); render(); }
+
+  (async()=>{
+    if(!window.claude || !window.claude.use){ goLocal(); return; }
+    claude.use("downloads").then(d=>{ downloads=d; $("#exportBtn").hidden=!d; }).catch(()=>{});
+    const fallback = setTimeout(()=>{ if(mode==="loading") goLocal(); },10000);
+    let d=null; try{ d = await claude.use("db"); }catch(e){}
+    if(!d){ clearTimeout(fallback); goLocal(); return; }
+    db=d;
+    try{ const u=await claude.use("user"); if(u){ const c=await u.can("data.write"); if(c===false) canWrite=false; } }catch(e){}
+    let gotC=false, gotS=false;
+    const ready=()=>{ if(gotC&&gotS&&mode!=="live"){ clearTimeout(fallback); mode="live"; } render(); };
+    db.doc("config/main").onSnapshot(snap=>{
+      if(snap.exists){ const c=snap.data(); config={...DEFAULT_CONFIG,...c,max:{...DEFAULT_CONFIG.max,...(c.max||{})}}; }
+      if(!snap.metadata.fromCache) gotC=true; ready();
+    },()=>{ gotC=true; ready(); });
+    db.collection("students").onSnapshot(snap=>{
+      students = snap.docs.map(x=>{ const v=x.data(); return {id:x.id,name:v.name||"",order:v.order||0,grades:structuredClone(v.grades||{})}; });
+      if(!snap.metadata.fromCache) gotS=true; ready();
+    },e=>{ clearTimeout(fallback); if(mode!=="live"){ mode="local"; loadLocal(); } render(); toast("تعذّر الاتصال بقاعدة البيانات — تعمل الآن محليًا"); });
+  })();
+})();
+</script>
+
+</body>
+</html>
